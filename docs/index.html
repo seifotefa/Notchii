@@ -80,6 +80,13 @@
   .beat .note { max-width: 40ch; font-size: 15px; color: var(--soft); margin-top: 22px; }
   .beat.right .say, .beat.right .note { margin-left: auto; text-align: right; }
 
+  /* ---- reel ---- */
+  .reelwrap { margin-top: clamp(56px, 8vw, 96px); }
+  .reel {
+    display: block; width: 100%; height: auto; border-radius: 8px;
+    background: #000; box-shadow: 0 30px 60px -26px rgba(12,12,11,.55);
+  }
+
   /* ---- ledger ---- */
   .ledger { padding: clamp(96px, 14vw, 170px) 0 0; }
   .ledger dl { border-top: 1px solid var(--rule); }
@@ -145,25 +152,35 @@
     </div>
   </section>
 
+  <section class="reelwrap">
+    <video class="reel" src="demo.mp4" poster="shots/tasks.png" autoplay muted loop playsinline></video>
+  </section>
+
   <section class="beat">
+    <h2 class="say">Only the parts <em>you actually want.</em></h2>
+    <figure class="plate"><img src="shots/settings.png" alt="Notchii settings listing the four modes with check marks"></figure>
+    <p class="note">Four modes, each switched on or off from the gear beside the notch — and every piece inside them too. Keep the list without the timer. Keep AirDrop without the shelf.</p>
+  </section>
+
+  <section class="beat right">
     <h2 class="say">Type it, press return, <em>it's on the list.</em></h2>
     <figure class="plate"><img src="shots/tasks.png" alt="Notchii open below the notch, showing a to-do list beside a timer"></figure>
     <p class="note">A timer sits next to it. Type any length — 5, or 5:30 — press return, and it runs.</p>
   </section>
 
-  <section class="beat right">
+  <section class="beat">
     <h2 class="say">Skip a track without <em>leaving what you're doing.</em></h2>
     <figure class="plate"><img src="shots/music.png" alt="Notchii showing the current track with album art and playback controls"></figure>
     <p class="note">Spotify and Apple Music. The panel takes your keystrokes without pulling focus from the app you were in.</p>
   </section>
 
-  <section class="beat">
+  <section class="beat right">
     <h2 class="say">Drag a file up. <em>It waits there.</em></h2>
     <figure class="plate"><img src="shots/files.png" alt="The Notchii file tray with an AirDrop pad"></figure>
     <p class="note">Drag it back out anywhere, or drop it on AirDrop to send it. Your file never moves and never gets copied.</p>
   </section>
 
-  <section class="beat right">
+  <section class="beat">
     <h2 class="say">The last twenty things <em>you copied.</em></h2>
     <figure class="plate"><img src="shots/clipboard.png" alt="Notchii clipboard history"></figure>
     <p class="note">Click one to put it back. Anything your password manager marks private is never written down.</p>
@@ -172,19 +189,23 @@
   <section class="ledger">
     <dl>
       <div class="line">
-        <dt>Weight</dt>
-        <dd>Two megabytes of Swift<span>AppKit and SwiftUI. No Electron, no bundled frameworks, one universal binary.</span></dd>
+        <dt>Free</dt>
+        <dd>No price, no account, no upsell<span>There is no pro tier and nothing is held back. You will never be asked to pay for a mode.</span></dd>
       </div>
       <div class="line">
-        <dt>Presence</dt>
-        <dd>No window, no Dock icon<span>It lives in the notch and goes back there. Nothing on your screen moves.</span></dd>
+        <dt>Lightweight</dt>
+        <dd>Two megabytes of native Swift<span>AppKit and SwiftUI, one universal binary. No Electron, no bundled frameworks, nothing running when the panel is closed.</span></dd>
       </div>
       <div class="line">
-        <dt>Privacy</dt>
-        <dd>Nothing leaves the machine<span>No account, no server. Your tasks, files and clipboard are files in your own Library folder.</span></dd>
+        <dt>Configurable</dt>
+        <dd>Built out of parts you choose<span>Modes and the pieces inside them switch off independently, so the panel only ever holds what you put in it.</span></dd>
       </div>
       <div class="line">
-        <dt>Licence</dt>
+        <dt>Private</dt>
+        <dd>Nothing leaves the machine<span>Your tasks, files and clipboard are files in your own Library folder. Password manager copies are never recorded.</span></dd>
+      </div>
+      <div class="line">
+        <dt>Open source</dt>
         <dd>MIT, every line on GitHub<span>Read it, fork it, or add a mode — each one is about thirty lines.</span></dd>
       </div>
     </dl>
