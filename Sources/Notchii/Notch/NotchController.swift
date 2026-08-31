@@ -32,6 +32,9 @@ final class NotchController: ObservableObject {
     private var pendingOpen = false
     private var pendingClose = false
     private var isDraggingFiles = false
+    /// Bumped on every close so a finished animation cannot collapse a panel
+    /// that has been reopened in the meantime.
+    private var closeToken = 0
 
     private var cancellables = Set<AnyCancellable>()
     private var monitors: [Any] = []
@@ -235,6 +238,7 @@ final class NotchController: ObservableObject {
 
     private func open() {
         guard !isOpen, let panel else { return }
+        closeToken += 1 // cancels any close animation still in flight
         isShowingSettings = false // always open on content, not on settings
         select(contextualModule())
         isOpen = true
@@ -250,6 +254,10 @@ final class NotchController: ObservableObject {
         isPinned = false
         isDraggingFiles = false
         isOpen = false
+
+        closeToken += 1
+        let token = closeToken
+        log("close animated=\(animated) token=\(token)")
 
         let finish = {
             // Ordering out hands key focus back to the frontmost app.
@@ -267,7 +275,13 @@ final class NotchController: ObservableObject {
                 geometry.windowFrame(height: geometry.size.height),
                 display: true
             )
-        } completionHandler: {
+        } completionHandler: { [weak self] in
+            // Reopened mid-animation? Leave the open panel alone.
+            guard let self, self.closeToken == token, !self.isOpen else {
+                self?.log("close \(token) superseded — panel stays open")
+                return
+            }
+            self.log("close \(token) finished")
             finish()
         }
     }

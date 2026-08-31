@@ -13,6 +13,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        terminateOtherInstances()
+
         let notch = NotchController(
             store: todos,
             shelf: shelf,
@@ -32,6 +34,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSApplication.didChangeScreenParametersNotification,
             object: nil
         )
+    }
+
+    /// Two copies would put two panels on the notch. Relaunching replaces.
+    private func terminateOtherInstances() {
+        guard let id = Bundle.main.bundleIdentifier else { return }
+        let mine = ProcessInfo.processInfo.processIdentifier
+        for app in NSRunningApplication.runningApplications(withBundleIdentifier: id)
+        where app.processIdentifier != mine {
+            app.terminate()
+        }
     }
 
     @objc private func screensChanged() {

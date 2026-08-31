@@ -175,9 +175,17 @@ private struct FocusTimerColumn: View {
     @ViewBuilder
     private var clock: some View {
         if timer.isRunning {
+            // Clicking a running clock pauses it and lets you retype the time,
+            // rather than doing nothing.
             Text(timer.clock)
                 .font(.system(size: 26, weight: .semibold).monospacedDigit())
                 .foregroundColor(Palette.accent)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    timer.pause()
+                    DispatchQueue.main.async { isEditing = true }
+                }
+                .help("Click to pause and set a new time")
         } else {
             TextField(
                 "",
