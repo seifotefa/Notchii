@@ -48,6 +48,56 @@ make install     # builds Notchii.app and copies it to /Applications
 
 Quit from the menu bar item.
 
+## Releasing
+
+```bash
+make release VERSION=0.1.0
+```
+
+Builds a universal (Apple silicon + Intel) binary, wraps it in `Notchii.app`,
+and produces a DMG in `dist/`. It also writes `dist/Notchii.dmg` under a fixed
+name so a download link never has to change, plus `latest.json` with the
+version, date and SHA-256.
+
+Signing and notarization switch on when the credentials are present:
+
+```bash
+export DEVELOPER_ID="Developer ID Application: Your Name (TEAMID)"
+export NOTARY_PROFILE="notchii"     # see xcrun notarytool store-credentials
+make release VERSION=0.1.0
+```
+
+Without them you still get a working DMG — it is simply unsigned, and macOS
+will block it on other people's machines (see below).
+
+### Publishing
+
+Attach the DMG to a GitHub release. That gives a permanent link that always
+points at the newest build, which is what a download button should use:
+
+```
+https://github.com/OWNER/Notchii/releases/latest/download/Notchii.dmg
+```
+
+`latest.json` is there if the page wants to show the version number, release
+date or checksum without hardcoding them.
+
+### First launch, before notarization
+
+Until the app is notarized, macOS blocks it on first launch with "Apple could
+not verify Notchii is free of malware" — and on macOS 15 and later there is no
+right-click → Open shortcut any more. The steps are:
+
+1. Open **System Settings → Privacy & Security**
+2. Scroll to **Security**, find the line about Notchii being blocked
+3. Click **Open Anyway** and authenticate
+4. Launch Notchii again and confirm
+
+Notchii has no Dock icon and no window, so the only sign it is running is the
+chevron in the menu bar.
+
+Any download page should carry these steps too, not just this README.
+
 ## Using it
 
 - **Hover the notch** — the sheet drops down.
