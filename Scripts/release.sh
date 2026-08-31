@@ -29,6 +29,7 @@ BIN="$(swift build -c release --arch arm64 --arch x86_64 --package-path "$ROOT" 
 echo "==> Assembling $NAME.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/$NAME"
+cp "$ROOT/Resources/AppIcon.icns" "$ROOT/Resources/mascot.png" "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -43,6 +44,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key><string>$VERSION</string>
     <key>LSMinimumSystemVersion</key><string>13.0</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSAppleEventsUsageDescription</key>
