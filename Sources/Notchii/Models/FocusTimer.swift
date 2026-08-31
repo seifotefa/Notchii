@@ -1,48 +1,69 @@
 import AppKit
 import Combine
 
-/// A pomodoro-style countdown that lives next to the to-do list.
+/// A countdown you set by typing. No presets, no modes — type minutes and
+/// seconds, press Return, and it runs.
 final class FocusTimer: ObservableObject {
-    enum Preset: Int, CaseIterable, Identifiable {
-        case focus = 25
-        case short = 5
-        case long = 15
-
-        var id: Int { rawValue }
-        var minutes: Int { rawValue }
-        var duration: TimeInterval { TimeInterval(rawValue * 60) }
-
-        var label: String {
-            switch self {
-            case .focus: return "Focus"
-            case .short: return "Break"
-            case .long: return "Long"
-            }
-        }
-    }
-
-    @Published private(set) var preset: Preset = .focus
-    @Published private(set) var remaining: TimeInterval = Preset.focus.duration
+    @Published private(set) var duration: TimeInterval = 25 * 60
+    @Published private(set) var remaining: TimeInterval = 25 * 60
     @Published private(set) var isRunning = false
 
     private var timer: Timer?
 
     var isFinished: Bool { remaining <= 0 }
 
-    var clock: String {
-        let total = Int(max(0, remaining).rounded(.up))
+    /// mm:ss of whatever is left.
+    var clock: String { Self.format(remaining) }
+
+    static func format(_ seconds: TimeInterval) -> String {
+        let total = Int(max(0, seconds).rounded(.up))
         return String(format: "%d:%02d", total / 60, total % 60)
+    }
+
+    /// Accepts "5", "5:30", "0:45". A bare number means minutes.
+    static func parse(_ text: String) -> TimeInterval? {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+
+        let parts = trimmed.split(separator: ":", omittingEmptySubsequences: false)
+        let seconds: TimeInterval
+
+        switch parts.count {
+        case 1:
+            guard let minutes = Int(parts[0]) else { return nil }
+            seconds = TimeInterval(minutes * 60)
+        case 2:
+            guard
+                let minutes = Int(parts[0].isEmpty ? "0" : String(parts[0])),
+                let secs = Int(parts[1].isEmpty ? "0" : String(parts[1])),
+                secs < 60
+            else { return nil }
+            seconds = TimeInterval(minutes * 60 + secs)
+        default:
+            return nil
+        }
+
+        guard seconds > 0, seconds <= 99 * 3600 else { return nil }
+        return seconds
     }
 
     // MARK: - Controls
 
-    func toggle() {
-        isRunning ? pause() : start()
+    /// Type a time and press Return: sets the duration and starts it.
+    @discardableResult
+    func startTyped(_ text: String) -> Bool {
+        guard let seconds = Self.parse(text) else { return false }
+        duration = seconds
+        remaining = seconds
+        start()
+        return true
     }
+
+    func toggle() { isRunning ? pause() : start() }
 
     func start() {
         guard !isRunning else { return }
-        if isFinished { remaining = preset.duration }
+        if isFinished { remaining = duration }
         isRunning = true
 
         let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
@@ -56,14 +77,10 @@ final class FocusTimer: ObservableObject {
         timer = nil
     }
 
+    /// Back to the time you last typed.
     func reset() {
         pause()
-        remaining = preset.duration
-    }
-
-    func select(_ preset: Preset) {
-        self.preset = preset
-        reset()
+        remaining = duration
     }
 
     private func tick() {

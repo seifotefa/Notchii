@@ -115,18 +115,14 @@ private struct TodoRow: View {
 
 private struct FocusTimerColumn: View {
     @EnvironmentObject private var timer: FocusTimer
+    @EnvironmentObject private var controller: NotchController
+
+    @State private var draft = ""
+    @FocusState private var isEditing: Bool
 
     var body: some View {
-        VStack(spacing: 8) {
-            Text(timer.clock)
-                .font(.system(size: 26, weight: .semibold).monospacedDigit())
-                .foregroundColor(timer.isRunning ? Palette.accent : Palette.primaryText)
-
-            HStack(spacing: 4) {
-                ForEach(FocusTimer.Preset.allCases) { preset in
-                    presetChip(preset)
-                }
-            }
+        VStack(spacing: 10) {
+            clock
 
             HStack(spacing: 10) {
                 Button(action: timer.toggle) {
@@ -145,25 +141,35 @@ private struct FocusTimerColumn: View {
                         .frame(width: 24, height: 24)
                 }
                 .buttonStyle(.plain)
+                .help("Back to \(FocusTimer.format(timer.duration))")
             }
         }
         .frame(maxWidth: .infinity)
+        .onAppear { draft = timer.clock }
+        .onChange(of: isEditing) { editing in
+            controller.isPinned = editing // do not close while typing a time
+            if !editing { draft = timer.clock }
+        }
     }
 
-    private func presetChip(_ preset: FocusTimer.Preset) -> some View {
-        let isActive = timer.preset == preset
-        return Button {
-            timer.select(preset)
-        } label: {
-            Text("\(preset.minutes)")
-                .font(.system(size: 10, weight: .medium).monospacedDigit())
-                .foregroundColor(isActive ? Palette.surface : Palette.secondaryText)
-                .frame(width: 26, height: 17)
-                .background(
-                    Capsule().fill(isActive ? Palette.accent : Palette.primaryText.opacity(0.08))
-                )
+    /// Running: just the countdown. Stopped: type a time and press Return.
+    @ViewBuilder
+    private var clock: some View {
+        if timer.isRunning {
+            Text(timer.clock)
+                .font(.system(size: 26, weight: .semibold).monospacedDigit())
+                .foregroundColor(Palette.accent)
+        } else {
+            TextField("", text: $draft, prompt: Text("0:00").foregroundColor(Palette.mutedText))
+                .textFieldStyle(.plain)
+                .multilineTextAlignment(.center)
+                .font(.system(size: 26, weight: .semibold).monospacedDigit())
+                .foregroundColor(Palette.primaryText)
+                .focused($isEditing)
+                .onSubmit {
+                    if !timer.startTyped(draft) { draft = timer.clock }
+                }
+                .help("Type minutes and seconds, then press Return")
         }
-        .buttonStyle(.plain)
-        .help(preset.label)
     }
 }

@@ -1,11 +1,11 @@
 import AppKit
 import Combine
 
-/// Recent clipboard text. Held in memory only — nothing you copy is
-/// ever written to disk.
+/// Recent clipboard text, kept across launches in Application Support.
+/// Anything a password manager marks private is never recorded.
 final class ClipboardStore: ObservableObject {
-    struct Entry: Identifiable, Equatable {
-        let id = UUID()
+    struct Entry: Identifiable, Equatable, Codable {
+        var id = UUID()
         let text: String
 
         var preview: String {
@@ -23,16 +23,33 @@ final class ClipboardStore: ObservableObject {
         "com.agilebits.onepassword"
     ]
 
-    @Published private(set) var entries: [Entry] = []
+    @Published private(set) var entries: [Entry] = [] {
+        didSet { save() }
+    }
 
     let limit = 20
 
     private let pasteboard = NSPasteboard.general
+    private let fileURL: URL
     private var changeCount: Int
     private var timer: Timer?
 
-    init() {
+    init(fileURL: URL? = nil) {
+        self.fileURL = fileURL ?? Storage.url(for: "clipboard.json")
         changeCount = pasteboard.changeCount
+        entries = load()
+    }
+
+    // MARK: - Persistence
+
+    private func load() -> [Entry] {
+        guard let data = try? Data(contentsOf: fileURL) else { return [] }
+        return (try? JSONDecoder().decode([Entry].self, from: data)) ?? []
+    }
+
+    private func save() {
+        guard let data = try? JSONEncoder().encode(entries) else { return }
+        try? data.write(to: fileURL, options: .atomic)
     }
 
     func start(interval: TimeInterval = 1) {

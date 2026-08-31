@@ -12,11 +12,11 @@ Five modes, each made of pieces you can switch off individually.
 
 | | |
 |---|---|
-| **Tasks** | To-do list and focus timer, side by side. Type and press Return to add; click the circle to scratch off. The timer runs 25 / 5 / 15 and chimes when it lands. |
+| **Tasks** | To-do list and timer, side by side. Type and press Return to add a task; click the circle to scratch off. For the timer, type a time — `5`, `5:30`, `0:45` — and press Return to start it. It chimes when it lands. |
 | **Tray** | Drag files onto the notch to park them, drag them back out anywhere. Double-click reveals in Finder. Drop onto the AirDrop pad on the left to send, or click it to AirDrop the whole tray. |
 | **Music** | Artwork, playhead, and shuffle / prev / play-pause / next for Spotify and Apple Music. |
-| **Clipboard** | The last 20 things you copied. Click one to put it back. Held in memory only, and items marked private by password managers are never recorded. |
-| **Settings** | Always the last stop in the cycle: one card per mode, with a checkbox for each piece. |
+| **Clipboard** | The last 20 things you copied. Click one to put it back. Items marked private by password managers are never recorded. |
+| **Settings** | Always the last stop in the cycle: one line per mode, a check mark to turn it on or off, and a gear for that mode's own settings. |
 
 The sheet is context aware: dragging a file opens the tray, music playing opens
 music, otherwise it opens whatever you used last. Cycle with the ‹ › arrows or
@@ -55,7 +55,7 @@ Quit from the menu bar item.
   while you are typing or dragging a file onto it.
 
 State lives in `~/Library/Application Support/Notchii/`
-(`todos.json`, `shelf.json`); settings live in `UserDefaults`.
+(`todos.json`, `shelf.json`, `clipboard.json`); settings live in `UserDefaults`.
 
 ## Permissions
 
