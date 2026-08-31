@@ -93,7 +93,7 @@ cat > "$DIST/latest.json" <<JSON
 {
   "version": "$VERSION",
   "date": "$(date -u +%Y-%m-%d)",
-  "url": "https://github.com/OWNER/Notchii/releases/latest/download/$NAME.dmg",
+  "url": "https://github.com/seifotefa/Notchii/releases/latest/download/$NAME.dmg",
   "sha256": "$SHA",
   "minimumSystemVersion": "13.0"
 }

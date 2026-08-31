@@ -79,11 +79,11 @@ will block it on other people's machines (see below).
 
 ### Publishing
 
-Attach the DMG to a GitHub release. That gives a permanent link that always
+Attach the DMG to a GitHub release (`gh release create`). That gives a permanent link that always
 points at the newest build, which is what a download button should use:
 
 ```
-https://github.com/OWNER/Notchii/releases/latest/download/Notchii.dmg
+https://github.com/seifotefa/Notchii/releases/latest/download/Notchii.dmg
 ```
 
 `latest.json` is there if the page wants to show the version number, release
