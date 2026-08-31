@@ -52,8 +52,7 @@ final class Preferences: ObservableObject {
         }
     }
 
-    /// Settings is always the last stop in the cycle.
-    var availableModules: [NotchModule] { configuredModules + [.settings] }
+    var availableModules: [NotchModule] { configuredModules }
 
     func isEnabled(_ module: NotchModule) -> Bool { enabledModules.contains(module) }
     func isEnabled(_ component: NotchComponent) -> Bool { enabledComponents.contains(component) }

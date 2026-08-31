@@ -11,6 +11,7 @@ import SwiftUI
 final class NotchController: ObservableObject {
     @Published private(set) var isOpen = false
     @Published private(set) var module: NotchModule = .tasks
+    @Published private(set) var isShowingSettings = false
 
     /// Set while the user is typing or dragging, so the sheet does not
     /// close under them.
@@ -133,13 +134,16 @@ final class NotchController: ObservableObject {
     func select(_ module: NotchModule) {
         guard preferences.availableModules.contains(module) else { return }
         self.module = module
-        // Settings is a stop in the cycle, not somewhere to reopen into.
-        if module != .settings { preferences.lastModule = module }
+        preferences.lastModule = module
+    }
+
+    func toggleSettings() {
+        isShowingSettings.toggle()
     }
 
     func cycle(by offset: Int) {
         let modules = preferences.availableModules
-        guard modules.count > 1 else { return }
+        guard !isShowingSettings, modules.count > 1 else { return }
         let current = modules.firstIndex(of: module) ?? 0
         let next = (current + offset + modules.count) % modules.count
         select(modules[next])
@@ -231,6 +235,7 @@ final class NotchController: ObservableObject {
 
     private func open() {
         guard !isOpen, let panel else { return }
+        isShowingSettings = false // always open on content, not on settings
         select(contextualModule())
         isOpen = true
         log("open module=\(module.rawValue)")

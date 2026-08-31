@@ -1,20 +1,27 @@
 import SwiftUI
 
-/// Two chevrons and the current module's name. Hidden when only one
-/// module is enabled, because then there is nothing to cycle.
+/// Two chevrons and the current mode's name. The chevrons disappear when
+/// there is nothing to cycle to — in settings, or with one mode enabled.
 struct ModuleSwitcher: View {
     @EnvironmentObject private var controller: NotchController
+    @EnvironmentObject private var preferences: Preferences
+
+    private var canCycle: Bool {
+        !controller.isShowingSettings && preferences.availableModules.count > 1
+    }
 
     var body: some View {
         HStack(spacing: 0) {
-            chevron("chevron.left") { controller.cycle(by: -1) }
+            if canCycle {
+                chevron("chevron.left") { controller.cycle(by: -1) }
+            }
 
             Spacer(minLength: 0)
 
             HStack(spacing: 5) {
-                Image(systemName: controller.module.symbol)
+                Image(systemName: controller.isShowingSettings ? "gearshape" : controller.module.symbol)
                     .font(.system(size: 9, weight: .semibold))
-                Text(controller.module.title.uppercased())
+                Text((controller.isShowingSettings ? "Settings" : controller.module.title).uppercased())
                     .font(.system(size: 9, weight: .semibold))
                     .tracking(0.8)
             }
@@ -22,7 +29,9 @@ struct ModuleSwitcher: View {
 
             Spacer(minLength: 0)
 
-            chevron("chevron.right") { controller.cycle(by: 1) }
+            if canCycle {
+                chevron("chevron.right") { controller.cycle(by: 1) }
+            }
         }
         .frame(height: Layout.switcherHeight)
     }

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Settings, right in the notch. One line per mode: a check mark turns it
-/// on or off, the gear opens that mode's own settings.
+/// Settings, opened from the gear beside the notch. One line per mode: a
+/// check mark turns it on or off, the gear opens that mode's own settings.
 struct SettingsModuleView: View {
     @EnvironmentObject private var preferences: Preferences
     @State private var focused: NotchModule?

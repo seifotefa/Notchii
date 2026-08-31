@@ -16,7 +16,11 @@ Five modes, each made of pieces you can switch off individually.
 | **Tray** | Drag files onto the notch to park them, drag them back out anywhere. Double-click reveals in Finder. Drop onto the AirDrop pad on the left to send, or click it to AirDrop the whole tray. |
 | **Music** | Artwork, playhead, and shuffle / prev / play-pause / next for Spotify and Apple Music. |
 | **Clipboard** | The last 20 things you copied. Click one to put it back. Items marked private by password managers are never recorded. |
-| **Settings** | Always the last stop in the cycle: one line per mode, a check mark to turn it on or off, and a gear for that mode's own settings. |
+
+
+Settings is the gear beside the notch, not a mode: one line per mode with a
+check mark to turn it on or off, and a gear that opens that mode's own pieces.
+Notchii's own two-eyed mark sits on the other side of the notch.
 
 The sheet is context aware: dragging a file opens the tray, music playing opens
 music, otherwise it opens whatever you used last. Cycle with the ‹ › arrows or

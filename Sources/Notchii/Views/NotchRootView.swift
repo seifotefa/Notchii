@@ -43,11 +43,15 @@ struct NotchRootView: View {
 
     private var sheet: some View {
         VStack(spacing: 0) {
-            Color.clear.frame(height: geometry.size.height) // sits behind the notch itself
+            topBar // flanks the notch: mascot on one side, settings on the other
 
             VStack(spacing: 0) {
-                module
-                ModuleSwitcher() // always present: Settings is always in the cycle
+                if controller.isShowingSettings {
+                    SettingsModuleView()
+                } else {
+                    module
+                }
+                ModuleSwitcher()
             }
             .padding(.horizontal, 16)
             .padding(.bottom, Layout.contentPadding)
@@ -63,6 +67,28 @@ struct NotchRootView: View {
         .padding(.bottom, Layout.shadowPadding)
     }
 
+    /// The notch is only ~180pt wide inside a 560pt sheet, so there is room
+    /// either side of it for the mark and the gear.
+    private var topBar: some View {
+        HStack(spacing: 0) {
+            Mascot(size: 18)
+            Spacer(minLength: 0)
+            Button(action: controller.toggleSettings) {
+                Image(systemName: controller.isShowingSettings ? "xmark" : "gearshape")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(
+                        controller.isShowingSettings ? Palette.primaryText : Palette.mutedText
+                    )
+                    .frame(width: 22, height: 22)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(controller.isShowingSettings ? "Close settings" : "Settings")
+        }
+        .padding(.horizontal, 14)
+        .frame(height: geometry.size.height)
+    }
+
     @ViewBuilder
     private var module: some View {
         switch controller.module {
@@ -70,7 +96,6 @@ struct NotchRootView: View {
         case .files: FileShelfView()
         case .music: MusicView()
         case .clipboard: ClipboardView()
-        case .settings: SettingsModuleView()
         }
     }
 }

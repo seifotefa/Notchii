@@ -6,13 +6,12 @@ enum NotchModule: String, CaseIterable, Codable, Identifiable {
     case files
     case music
     case clipboard
-    /// Always available, and never switched off from inside itself.
-    case settings
 
     var id: String { rawValue }
 
-    /// The modes that can be turned on and off.
-    static var configurable: [NotchModule] { allCases.filter { $0 != .settings } }
+    /// Every mode can be turned on and off; settings is not a mode, it is
+    /// the gear beside the notch.
+    static var configurable: [NotchModule] { allCases }
 
     var title: String {
         switch self {
@@ -20,7 +19,6 @@ enum NotchModule: String, CaseIterable, Codable, Identifiable {
         case .files: return "Tray"
         case .music: return "Music"
         case .clipboard: return "Clipboard"
-        case .settings: return "Settings"
         }
     }
 
@@ -30,7 +28,6 @@ enum NotchModule: String, CaseIterable, Codable, Identifiable {
         case .files: return "tray.full"
         case .music: return "music.note"
         case .clipboard: return "doc.on.clipboard"
-        case .settings: return "gearshape"
         }
     }
 
