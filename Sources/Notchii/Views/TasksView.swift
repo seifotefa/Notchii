@@ -117,6 +117,7 @@ private struct FocusTimerColumn: View {
     @EnvironmentObject private var timer: FocusTimer
     @EnvironmentObject private var controller: NotchController
 
+    /// Only meaningful while `isEditing`; the clock is a plain label otherwise.
     @State private var draft = ""
     @FocusState private var isEditing: Bool
 
@@ -125,7 +126,7 @@ private struct FocusTimerColumn: View {
             clock
 
             HStack(spacing: 10) {
-                Button(action: timer.toggle) {
+                Button(action: play) {
                     Image(systemName: timer.isRunning ? "pause.fill" : "play.fill")
                         .font(.system(size: 10))
                         .foregroundColor(Palette.primaryText.opacity(0.85))
@@ -147,46 +148,14 @@ private struct FocusTimerColumn: View {
         .frame(maxWidth: .infinity)
         .onChange(of: isEditing) { editing in
             controller.isPinned = editing // do not close while typing a time
-            if editing {
-                // Start a fresh entry rather than appending to the time shown.
-                draft = ""
-            } else {
-                // Commit on the way out, so clicking straight onto play runs
-                // the time that was just typed.
-                timer.setTyped(draft)
-                draft = timer.clock
-            }
         }
     }
 
-    /// Return on an empty field just starts the time already set; otherwise
-    /// it takes what was typed. Anything unparseable clears so it can be
-    /// retyped, rather than silently snapping back.
-    private func submit() {
-        let text = draft.trimmingCharacters(in: .whitespaces)
-        if text.isEmpty {
-            timer.start()
-        } else if !timer.startTyped(text) {
-            draft = ""
-        }
-    }
-
-    /// Running: just the countdown. Stopped: type a time and press Return.
+    /// Editing: a field holding exactly what you typed.
+    /// Otherwise: a label. There is no field to hold a stale value.
     @ViewBuilder
     private var clock: some View {
-        if timer.isRunning {
-            // Clicking a running clock pauses it and lets you retype the time,
-            // rather than doing nothing.
-            Text(timer.clock)
-                .font(.system(size: 26, weight: .semibold).monospacedDigit())
-                .foregroundColor(Palette.accent)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    timer.pause()
-                    DispatchQueue.main.async { isEditing = true }
-                }
-                .help("Click to pause and set a new time")
-        } else {
+        if isEditing {
             TextField(
                 "",
                 text: $draft,
@@ -197,9 +166,43 @@ private struct FocusTimerColumn: View {
             .font(.system(size: 26, weight: .semibold).monospacedDigit())
             .foregroundColor(Palette.primaryText)
             .focused($isEditing)
-            .onAppear { draft = timer.clock }
-            .onSubmit(submit)
+            .onSubmit(commit)
             .help("Type minutes and seconds, then press Return")
+        } else {
+            Text(timer.clock)
+                .font(.system(size: 26, weight: .semibold).monospacedDigit())
+                .foregroundColor(timer.isRunning ? Palette.accent : Palette.primaryText)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: beginEditing)
+                .help("Click to set a new time")
+        }
+    }
+
+    private func beginEditing() {
+        timer.pause()
+        draft = ""
+        isEditing = true
+    }
+
+    /// Return: take what was typed and run it. Empty just starts the time set.
+    private func commit() {
+        let text = draft.trimmingCharacters(in: .whitespaces)
+        isEditing = false
+        draft = ""
+        if text.isEmpty {
+            timer.start()
+        } else {
+            timer.startTyped(text)
+        }
+    }
+
+    /// Play takes whatever is in the field first, so typing then clicking play
+    /// runs the typed time rather than the old one.
+    private func play() {
+        if isEditing {
+            commit()
+        } else {
+            timer.toggle()
         }
     }
 }
