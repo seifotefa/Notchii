@@ -45,11 +45,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// A minimal menu bar item, so the app can be configured and quit.
     private func installStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.image = NSImage(
-            systemSymbolName: "chevron.down.circle",
-            accessibilityDescription: "Notchii"
-        )
-        item.button?.image?.isTemplate = true
+        // The bundled mask renders as a proper menu bar template; the symbol
+        // is the fallback when running the bare binary.
+        if let mark = NSImage(named: "menubar") {
+            mark.size = NSSize(width: 18, height: 18)
+            mark.isTemplate = true
+            item.button?.image = mark
+        } else {
+            item.button?.image = NSImage(
+                systemSymbolName: "chevron.down.circle",
+                accessibilityDescription: "Notchii"
+            )
+            item.button?.image?.isTemplate = true
+        }
 
         let menu = NSMenu()
         menu.addItem(withTitle: "Hover the notch to open", action: nil, keyEquivalent: "")
