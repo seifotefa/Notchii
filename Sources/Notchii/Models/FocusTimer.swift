@@ -33,6 +33,8 @@ final class FocusTimer: ObservableObject {
             guard let minutes = Int(parts[0]) else { return nil }
             seconds = TimeInterval(minutes * 60)
         case 2:
+            // Seconds are at most two digits: "25:005" is a typo, not 25:05.
+            guard parts[1].count <= 2 else { return nil }
             guard
                 let minutes = Int(parts[0].isEmpty ? "0" : String(parts[0])),
                 let secs = Int(parts[1].isEmpty ? "0" : String(parts[1])),
@@ -49,12 +51,19 @@ final class FocusTimer: ObservableObject {
 
     // MARK: - Controls
 
+    /// Applies a typed time without starting it. Ignored while running.
+    @discardableResult
+    func setTyped(_ text: String) -> Bool {
+        guard !isRunning, let seconds = Self.parse(text) else { return false }
+        duration = seconds
+        remaining = seconds
+        return true
+    }
+
     /// Type a time and press Return: sets the duration and starts it.
     @discardableResult
     func startTyped(_ text: String) -> Bool {
-        guard let seconds = Self.parse(text) else { return false }
-        duration = seconds
-        remaining = seconds
+        guard setTyped(text) else { return false }
         start()
         return true
     }

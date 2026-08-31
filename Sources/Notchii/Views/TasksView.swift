@@ -145,10 +145,29 @@ private struct FocusTimerColumn: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .onAppear { draft = timer.clock }
         .onChange(of: isEditing) { editing in
             controller.isPinned = editing // do not close while typing a time
-            if !editing { draft = timer.clock }
+            if editing {
+                // Start a fresh entry rather than appending to the time shown.
+                draft = ""
+            } else {
+                // Commit on the way out, so clicking straight onto play runs
+                // the time that was just typed.
+                timer.setTyped(draft)
+                draft = timer.clock
+            }
+        }
+    }
+
+    /// Return on an empty field just starts the time already set; otherwise
+    /// it takes what was typed. Anything unparseable clears so it can be
+    /// retyped, rather than silently snapping back.
+    private func submit() {
+        let text = draft.trimmingCharacters(in: .whitespaces)
+        if text.isEmpty {
+            timer.start()
+        } else if !timer.startTyped(text) {
+            draft = ""
         }
     }
 
@@ -160,16 +179,19 @@ private struct FocusTimerColumn: View {
                 .font(.system(size: 26, weight: .semibold).monospacedDigit())
                 .foregroundColor(Palette.accent)
         } else {
-            TextField("", text: $draft, prompt: Text("0:00").foregroundColor(Palette.mutedText))
-                .textFieldStyle(.plain)
-                .multilineTextAlignment(.center)
-                .font(.system(size: 26, weight: .semibold).monospacedDigit())
-                .foregroundColor(Palette.primaryText)
-                .focused($isEditing)
-                .onSubmit {
-                    if !timer.startTyped(draft) { draft = timer.clock }
-                }
-                .help("Type minutes and seconds, then press Return")
+            TextField(
+                "",
+                text: $draft,
+                prompt: Text(FocusTimer.format(timer.duration)).foregroundColor(Palette.mutedText)
+            )
+            .textFieldStyle(.plain)
+            .multilineTextAlignment(.center)
+            .font(.system(size: 26, weight: .semibold).monospacedDigit())
+            .foregroundColor(Palette.primaryText)
+            .focused($isEditing)
+            .onAppear { draft = timer.clock }
+            .onSubmit(submit)
+            .help("Type minutes and seconds, then press Return")
         }
     }
 }
