@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "Notchi",
+    name: "Notchii",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "Notchi",
-            path: "Sources/Notchi"
+            name: "Notchii",
+            path: "Sources/Notchii"
         )
     ]
 )

@@ -2,7 +2,7 @@ import AppKit
 
 /// Describes the hover target at the top of a screen.
 /// On notched MacBooks this is the real notch; on every other Mac
-/// Notchi falls back to a virtual notch of the same shape.
+/// Notchii falls back to a virtual notch of the same shape.
 struct NotchGeometry {
     let screen: NSScreen
     let size: CGSize
@@ -32,8 +32,8 @@ struct NotchGeometry {
         }
     }
 
-    /// The collapsed window frame, in global screen coordinates.
-    var collapsedFrame: CGRect {
+    /// The hover target, in global screen coordinates.
+    var notchRect: CGRect {
         CGRect(
             x: screen.frame.midX - size.width / 2,
             y: screen.frame.maxY - size.height,
@@ -42,14 +42,19 @@ struct NotchGeometry {
         )
     }
 
-    /// The dropdown frame: same centre line, hanging down from the screen edge.
-    func expandedFrame(height: CGFloat) -> CGRect {
-        let width = max(Layout.panelWidth, size.width + 120)
+    var width: CGFloat {
+        max(Layout.panelWidth, size.width + 200)
+    }
+
+    /// The open sheet: same centre line, hanging down from the screen edge.
+    /// `height` is the sheet itself; extra room is added underneath for the shadow.
+    func windowFrame(height: CGFloat) -> CGRect {
+        let total = height + Layout.shadowPadding
         return CGRect(
             x: screen.frame.midX - width / 2,
-            y: screen.frame.maxY - height,
+            y: screen.frame.maxY - total,
             width: width,
-            height: height
+            height: total
         )
     }
 }

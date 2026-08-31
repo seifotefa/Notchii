@@ -12,7 +12,7 @@ final class TodoStore: ObservableObject {
     private let encoder = JSONEncoder()
 
     init(fileURL: URL? = nil) {
-        self.fileURL = fileURL ?? Self.defaultFileURL()
+        self.fileURL = fileURL ?? Storage.url(for: "todos.json")
         encoder.outputFormatting = .prettyPrinted
         todos = load()
     }
@@ -43,15 +43,6 @@ final class TodoStore: ObservableObject {
     }
 
     // MARK: - Persistence
-
-    private static func defaultFileURL() -> URL {
-        let base = FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask)
-            .first ?? FileManager.default.temporaryDirectory
-        let folder = base.appendingPathComponent("Notchi", isDirectory: true)
-        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        return folder.appendingPathComponent("todos.json")
-    }
 
     private func load() -> [Todo] {
         guard let data = try? Data(contentsOf: fileURL) else { return [] }

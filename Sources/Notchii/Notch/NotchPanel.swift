@@ -16,7 +16,8 @@ final class NotchPanel: NSPanel {
         hasShadow = false
         isMovable = false
         hidesOnDeactivate = false
-        level = NSWindow.Level(rawValue: Int(CGShieldingWindowLevel()))
+        // Above the menu bar, below the screen saver.
+        level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.popUpMenuWindow)))
         collectionBehavior = [
             .canJoinAllSpaces,
             .fullScreenAuxiliary,
@@ -27,25 +28,4 @@ final class NotchPanel: NSPanel {
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
-}
-
-/// Hosts the SwiftUI content and reports mouse enter/exit for the whole window.
-final class HoverView: NSView {
-    var onEnter: () -> Void = {}
-    var onExit: () -> Void = {}
-
-    override func updateTrackingAreas() {
-        super.updateTrackingAreas()
-        for area in trackingAreas { removeTrackingArea(area) }
-        addTrackingArea(
-            NSTrackingArea(
-                rect: .zero,
-                options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
-                owner: self
-            )
-        )
-    }
-
-    override func mouseEntered(with event: NSEvent) { onEnter() }
-    override func mouseExited(with event: NSEvent) { onExit() }
 }

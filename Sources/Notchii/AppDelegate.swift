@@ -1,12 +1,25 @@
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private let preferences = Preferences()
+    private let todos = TodoStore()
+    private let shelf = FileShelfStore()
+    private let music = MusicController()
+    private let settingsWindow = SettingsWindow()
+
     private var notch: NotchController?
     private var statusItem: NSStatusItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        notch = NotchController(store: TodoStore())
-        notch?.start()
+        let notch = NotchController(
+            store: todos,
+            shelf: shelf,
+            music: music,
+            preferences: preferences
+        )
+        notch.start()
+        self.notch = notch
+
         installStatusItem()
 
         NotificationCenter.default.addObserver(
@@ -21,24 +34,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         notch?.repositionForCurrentScreen()
     }
 
-    /// A minimal menu bar item, so the app can be quit and discovered.
+    @objc private func openSettings() {
+        settingsWindow.show(preferences: preferences)
+    }
+
+    /// A minimal menu bar item, so the app can be configured and quit.
     private func installStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.image = NSImage(
-            systemSymbolName: "checklist",
-            accessibilityDescription: "Notchi"
+            systemSymbolName: "chevron.down.circle",
+            accessibilityDescription: "Notchii"
         )
         item.button?.image?.isTemplate = true
 
         let menu = NSMenu()
-        menu.addItem(
-            withTitle: "Hover the notch to open Notchi",
-            action: nil,
-            keyEquivalent: ""
-        ).isEnabled = false
+        menu.addItem(withTitle: "Hover the notch to open", action: nil, keyEquivalent: "")
+            .isEnabled = false
         menu.addItem(.separator())
         menu.addItem(
-            withTitle: "Quit Notchi",
+            withTitle: "Settings…",
+            action: #selector(openSettings),
+            keyEquivalent: ","
+        ).target = self
+        menu.addItem(
+            withTitle: "Quit Notchii",
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
