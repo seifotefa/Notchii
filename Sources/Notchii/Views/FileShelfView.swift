@@ -1,11 +1,19 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
-/// Files parked on the notch: drop them in, drag them back out.
+/// Files parked on the notch: drop them in, drag them back out,
+/// or throw them at AirDrop on the left.
 struct FileShelfView: View {
     @EnvironmentObject private var shelf: FileShelfStore
 
     var body: some View {
-        Group {
+        HStack(spacing: 12) {
+            AirDropZone()
+
+            Rectangle()
+                .fill(Palette.hairline)
+                .frame(width: 1, height: 40)
+
             if shelf.items.isEmpty {
                 empty
             } else {
@@ -32,7 +40,43 @@ struct FileShelfView: View {
                     .font(.system(size: 11))
                     .foregroundColor(Palette.mutedText)
             )
-            .padding(.vertical, 8)
+            .padding(.vertical, 9)
+    }
+}
+
+/// Drop files here to send them straight out; click to send everything
+/// currently on the shelf.
+private struct AirDropZone: View {
+    @EnvironmentObject private var shelf: FileShelfStore
+    @State private var isTargeted = false
+    @State private var isHovering = false
+
+    var body: some View {
+        VStack(spacing: 3) {
+            Image(systemName: "dot.radiowaves.up.forward")
+                .font(.system(size: 15, weight: .medium))
+            Text("AirDrop")
+                .font(.system(size: 9, weight: .medium))
+        }
+        .foregroundColor(isTargeted ? Palette.accent : Palette.secondaryText)
+        .frame(width: 62, height: 56)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Palette.primaryText.opacity(isTargeted || isHovering ? 0.10 : 0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(isTargeted ? Palette.accent.opacity(0.6) : .clear, lineWidth: 1)
+        )
+        .contentShape(Rectangle())
+        .onHover { isHovering = $0 }
+        .onTapGesture { AirDrop.send(shelf.items.map(\.url)) }
+        .onDrop(of: [UTType.fileURL], isTargeted: $isTargeted) { providers in
+            DropSupport.loadURLs(from: providers) { urls in AirDrop.send(urls) }
+            return true
+        }
+        .animation(.easeOut(duration: 0.12), value: isTargeted)
+        .help("Drop files to AirDrop them, or click to send the whole tray")
     }
 }
 

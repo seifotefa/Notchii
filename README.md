@@ -11,8 +11,8 @@ No Dock icon, no window, no Electron. One small AppKit + SwiftUI binary.
 | | |
 |---|---|
 | **Tasks** | Type and press Return to add. Click the circle to scratch off, hover a row and click × to delete. |
-| **Tray** | Drag files onto the notch to park them, drag them back out anywhere. Double-click reveals in Finder. |
-| **Music** | Now playing plus prev / play-pause / next for Spotify and Apple Music. |
+| **Tray** | Drag files onto the notch to park them, drag them back out anywhere. Double-click reveals in Finder. Drop onto the AirDrop pad on the left to send, or click it to AirDrop the whole tray. |
+| **Music** | Artwork, playhead, and shuffle / prev / play-pause / next for Spotify and Apple Music. |
 
 The sheet is context aware: dragging a file opens the tray, music playing opens
 music, otherwise it opens whatever you used last. Cycle with the ‹ › arrows or

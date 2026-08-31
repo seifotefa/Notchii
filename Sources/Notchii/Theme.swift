@@ -9,7 +9,7 @@ enum Layout {
     static let composerHeight: CGFloat = 38
     static let visibleRows = 4
     static let shelfHeight: CGFloat = 74
-    static let musicHeight: CGFloat = 58
+    static let musicHeight: CGFloat = 98
     static let switcherHeight: CGFloat = 22
     static let contentPadding: CGFloat = 8
     static let shadowPadding: CGFloat = 16

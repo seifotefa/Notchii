@@ -93,25 +93,7 @@ private struct ShelfDropDelegate: DropDelegate {
     }
 
     func performDrop(info: DropInfo) -> Bool {
-        let providers = info.itemProviders(for: [UTType.fileURL])
-        let group = DispatchGroup()
-        var urls: [URL] = []
-        let lock = NSLock()
-
-        for provider in providers {
-            group.enter()
-            provider.loadDataRepresentation(
-                forTypeIdentifier: UTType.fileURL.identifier
-            ) { data, _ in
-                defer { group.leave() }
-                guard let data, let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
-                lock.lock()
-                urls.append(url)
-                lock.unlock()
-            }
-        }
-
-        group.notify(queue: .main) {
+        DropSupport.loadURLs(from: info.itemProviders(for: [UTType.fileURL])) { urls in
             shelf.add(urls)
             controller.endFileDrag()
         }
