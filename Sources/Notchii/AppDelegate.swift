@@ -5,6 +5,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let todos = TodoStore()
     private let shelf = FileShelfStore()
     private let music = MusicController()
+    private let clipboard = ClipboardStore()
+    private let focusTimer = FocusTimer()
     private let settingsWindow = SettingsWindow()
 
     private var notch: NotchController?
@@ -15,6 +17,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             store: todos,
             shelf: shelf,
             music: music,
+            clipboard: clipboard,
+            focusTimer: focusTimer,
             preferences: preferences
         )
         notch.start()

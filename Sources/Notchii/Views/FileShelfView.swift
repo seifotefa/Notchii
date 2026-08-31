@@ -5,16 +5,23 @@ import UniformTypeIdentifiers
 /// or throw them at AirDrop on the left.
 struct FileShelfView: View {
     @EnvironmentObject private var shelf: FileShelfStore
+    @EnvironmentObject private var preferences: Preferences
 
     var body: some View {
         HStack(spacing: 12) {
-            AirDropZone()
+            if preferences.isEnabled(.airdrop) {
+                AirDropZone()
 
-            Rectangle()
-                .fill(Palette.hairline)
-                .frame(width: 1, height: 40)
+                if preferences.isEnabled(.shelf) {
+                    Rectangle()
+                        .fill(Palette.hairline)
+                        .frame(width: 1, height: 44)
+                }
+            }
 
-            if shelf.items.isEmpty {
+            if !preferences.isEnabled(.shelf) {
+                Spacer(minLength: 0)
+            } else if shelf.items.isEmpty {
                 empty
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -26,7 +33,7 @@ struct FileShelfView: View {
                 }
             }
         }
-        .frame(height: Layout.shelfHeight)
+        .frame(height: Layout.contentHeight)
     }
 
     private var empty: some View {
@@ -40,7 +47,7 @@ struct FileShelfView: View {
                     .font(.system(size: 11))
                     .foregroundColor(Palette.mutedText)
             )
-            .padding(.vertical, 9)
+            .padding(.vertical, 22)
     }
 }
 
@@ -53,12 +60,19 @@ private struct AirDropZone: View {
 
     var body: some View {
         VStack(spacing: 3) {
-            Image(systemName: "dot.radiowaves.up.forward")
-                .font(.system(size: 15, weight: .medium))
+            if let icon = AirDrop.icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .frame(width: 24, height: 24)
+                    .opacity(isTargeted ? 1 : 0.9)
+            } else {
+                Image(systemName: "dot.radiowaves.up.forward")
+                    .font(.system(size: 15, weight: .medium))
+            }
             Text("AirDrop")
                 .font(.system(size: 9, weight: .medium))
+                .foregroundColor(isTargeted ? Palette.accent : Palette.secondaryText)
         }
-        .foregroundColor(isTargeted ? Palette.accent : Palette.secondaryText)
         .frame(width: 62, height: 56)
         .background(
             RoundedRectangle(cornerRadius: 8)

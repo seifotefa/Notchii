@@ -1,45 +1,26 @@
 import SwiftUI
 
 enum Layout {
-    /// Wide and short: the sheet reads as the notch stretching sideways,
-    /// never as a tall dropdown.
+    /// The sheet is one fixed size, always. Modules lay out inside it, so
+    /// the switcher arrows never move out from under the pointer.
     static let panelWidth: CGFloat = 560
-    static let cornerRadius: CGFloat = 26
-    static let rowHeight: CGFloat = 28
-    static let composerHeight: CGFloat = 38
-    static let visibleRows = 4
-    static let shelfHeight: CGFloat = 74
-    static let musicHeight: CGFloat = 98
+    static let contentHeight: CGFloat = 120
     static let switcherHeight: CGFloat = 22
     static let contentPadding: CGFloat = 8
+    static let cornerRadius: CGFloat = 26
     static let shadowPadding: CGFloat = 16
+
+    static let rowHeight: CGFloat = 28
+    static let composerHeight: CGFloat = 38
+    static let clipRowHeight: CGFloat = 26
+    static let timerColumnWidth: CGFloat = 150
 
     static let hoverDelay: TimeInterval = 0.10
     static let closeDelay: TimeInterval = 0.20
     static let animationDuration: TimeInterval = 0.22
 
-    static func listHeight(rowCount: Int) -> CGFloat {
-        CGFloat(min(rowCount, visibleRows)) * rowHeight
-    }
-
-    static func moduleHeight(_ module: NotchModule, rowCount: Int) -> CGFloat {
-        switch module {
-        case .tasks: return composerHeight + listHeight(rowCount: rowCount)
-        case .files: return shelfHeight
-        case .music: return musicHeight
-        }
-    }
-
-    static func sheetHeight(
-        module: NotchModule,
-        rowCount: Int,
-        notchHeight: CGFloat,
-        showsSwitcher: Bool
-    ) -> CGFloat {
-        notchHeight
-            + moduleHeight(module, rowCount: rowCount)
-            + (showsSwitcher ? switcherHeight : 0)
-            + contentPadding
+    static func sheetHeight(notchHeight: CGFloat) -> CGFloat {
+        notchHeight + contentHeight + switcherHeight + contentPadding
     }
 }
 
@@ -73,5 +54,15 @@ struct BottomRoundedRectangle: Shape {
         )
         path.closeSubpath()
         return path
+    }
+}
+
+/// A thin vertical rule between two columns.
+struct ColumnDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Palette.hairline)
+            .frame(width: 1)
+            .padding(.vertical, 6)
     }
 }

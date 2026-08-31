@@ -47,9 +47,7 @@ struct NotchRootView: View {
 
             VStack(spacing: 0) {
                 module
-                if preferences.orderedModules.count > 1 {
-                    ModuleSwitcher()
-                }
+                ModuleSwitcher() // always present: Settings is always in the cycle
             }
             .padding(.horizontal, 16)
             .padding(.bottom, Layout.contentPadding)
@@ -68,9 +66,11 @@ struct NotchRootView: View {
     @ViewBuilder
     private var module: some View {
         switch controller.module {
-        case .tasks: TodoListView()
+        case .tasks: TasksView()
         case .files: FileShelfView()
         case .music: MusicView()
+        case .clipboard: ClipboardView()
+        case .settings: SettingsModuleView()
         }
     }
 }

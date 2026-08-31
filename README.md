@@ -8,15 +8,22 @@ No Dock icon, no window, no Electron. One small AppKit + SwiftUI binary.
 
 ## Modules
 
+Five modes, each made of pieces you can switch off individually.
+
 | | |
 |---|---|
-| **Tasks** | Type and press Return to add. Click the circle to scratch off, hover a row and click × to delete. |
+| **Tasks** | To-do list and focus timer, side by side. Type and press Return to add; click the circle to scratch off. The timer runs 25 / 5 / 15 and chimes when it lands. |
 | **Tray** | Drag files onto the notch to park them, drag them back out anywhere. Double-click reveals in Finder. Drop onto the AirDrop pad on the left to send, or click it to AirDrop the whole tray. |
 | **Music** | Artwork, playhead, and shuffle / prev / play-pause / next for Spotify and Apple Music. |
+| **Clipboard** | The last 20 things you copied. Click one to put it back. Held in memory only, and items marked private by password managers are never recorded. |
+| **Settings** | Always the last stop in the cycle: one card per mode, with a checkbox for each piece. |
 
 The sheet is context aware: dragging a file opens the tray, music playing opens
 music, otherwise it opens whatever you used last. Cycle with the ‹ › arrows or
-⌘← / ⌘→, and turn modules on or off in Settings (menu bar item → Settings…).
+⌘← / ⌘→.
+
+The sheet is always the same size no matter which mode is showing, so the
+arrows stay under your pointer as you cycle.
 
 ## Requirements
 
@@ -65,7 +72,7 @@ Sources/Notchii
 ├── main.swift            # accessory-app entry point
 ├── AppDelegate.swift     # wiring + menu bar item
 ├── Theme.swift           # layout constants, palette, panel shape
-├── Models/               # Todo, TodoStore, FileShelfStore, MusicController, Preferences
+├── Models/               # stores and state, one file each
 ├── Notch/                # geometry, panel, hover controller, settings window
 └── Views/                # SwiftUI content, one file per module
 ```
@@ -80,9 +87,9 @@ panel does not deactivate the app you were using.
 The sheet is deliberately a container. Next candidates: quick timers, a
 clipboard history, launch at login, and a per-module keyboard shortcut.
 
-Adding a module means: a case in `NotchModule`, a height in `Layout`, and a
-SwiftUI view. Everything else — the switcher, the settings toggle, the sizing —
-picks it up automatically.
+Adding a mode means: a case in `NotchModule`, its pieces in `NotchComponent`,
+and a SwiftUI view sized to `Layout.contentHeight`. The switcher, the settings
+card, and the enable/disable plumbing pick it up automatically.
 
 ## License
 

@@ -19,6 +19,8 @@ final class NotchController: ObservableObject {
     private let store: TodoStore
     private let shelf: FileShelfStore
     private let music: MusicController
+    private let clipboard: ClipboardStore
+    private let focusTimer: FocusTimer
     private let preferences: Preferences
 
     private var geometry: NotchGeometry?
@@ -39,11 +41,15 @@ final class NotchController: ObservableObject {
         store: TodoStore,
         shelf: FileShelfStore,
         music: MusicController,
+        clipboard: ClipboardStore,
+        focusTimer: FocusTimer,
         preferences: Preferences
     ) {
         self.store = store
         self.shelf = shelf
         self.music = music
+        self.clipboard = clipboard
+        self.focusTimer = focusTimer
         self.preferences = preferences
         self.module = preferences.lastModule
     }
@@ -68,41 +74,43 @@ final class NotchController: ObservableObject {
             .environmentObject(store)
             .environmentObject(shelf)
             .environmentObject(music)
+            .environmentObject(clipboard)
+            .environmentObject(focusTimer)
             .environmentObject(preferences)
             .environmentObject(self)
         panel.contentView = NSHostingView(rootView: root)
         panel.orderFront(nil)
         self.panel = panel
 
-        // Keep the sheet sized to whatever it is currently showing.
-        Publishers.Merge3(
-            store.$todos.map { _ in () },
-            shelf.$items.map { _ in () },
-            $module.map { _ in () }
+        // Background work follows the settings: music polling costs nothing
+        // while neither player is running, and the clipboard is not watched
+        // at all unless you asked for the history.
+        Publishers.CombineLatest(
+            preferences.$enabledModules,
+            preferences.$enabledComponents
         )
         .receive(on: RunLoop.main)
-        .sink { [weak self] in
-            guard let self, self.isOpen else { return }
-            self.applyOpenFrame(animated: true)
+        .sink { [weak self] _, _ in
+            guard let self else { return }
+            let available = preferences.availableModules
+
+            if available.contains(.music) {
+                self.music.startPolling()
+            } else {
+                self.music.stopPolling()
+            }
+
+            if available.contains(.clipboard) {
+                self.clipboard.start()
+            } else {
+                self.clipboard.stop()
+            }
+
+            if !available.contains(self.module), let first = available.first {
+                self.select(first)
+            }
         }
         .store(in: &cancellables)
-
-        // Music polling costs nothing while neither player is running,
-        // but stop it outright when the module is switched off.
-        preferences.$enabledModules
-            .receive(on: RunLoop.main)
-            .sink { [weak self] enabled in
-                guard let self else { return }
-                if enabled.contains(.music) {
-                    self.music.startPolling()
-                } else {
-                    self.music.stopPolling()
-                }
-                if !enabled.contains(self.module) {
-                    self.module = preferences.orderedModules.first ?? .tasks
-                }
-            }
-            .store(in: &cancellables)
 
         installMonitors()
         log("started notch=\(geometry.notchRect) real=\(geometry.isRealNotch)")
@@ -120,16 +128,17 @@ final class NotchController: ObservableObject {
 
     // MARK: - Modules
 
-    var isFileTrayAvailable: Bool { preferences.isEnabled(.files) }
+    var isFileTrayAvailable: Bool { preferences.availableModules.contains(.files) }
 
     func select(_ module: NotchModule) {
-        guard preferences.isEnabled(module) else { return }
+        guard preferences.availableModules.contains(module) else { return }
         self.module = module
-        preferences.lastModule = module
+        // Settings is a stop in the cycle, not somewhere to reopen into.
+        if module != .settings { preferences.lastModule = module }
     }
 
     func cycle(by offset: Int) {
-        let modules = preferences.orderedModules
+        let modules = preferences.availableModules
         guard modules.count > 1 else { return }
         let current = modules.firstIndex(of: module) ?? 0
         let next = (current + offset + modules.count) % modules.count
@@ -138,7 +147,7 @@ final class NotchController: ObservableObject {
 
     /// What the sheet should show right now, given what is going on.
     private func contextualModule() -> NotchModule {
-        let modules = preferences.orderedModules
+        let modules = preferences.availableModules
         if isDraggingFiles, modules.contains(.files) { return .files }
         if music.isPlaying, modules.contains(.music) { return .music }
         if modules.contains(preferences.lastModule) { return preferences.lastModule }
@@ -260,13 +269,9 @@ final class NotchController: ObservableObject {
 
     private func applyOpenFrame(animated: Bool) {
         guard let panel, let geometry else { return }
-        let sheet = Layout.sheetHeight(
-            module: module,
-            rowCount: store.todos.count,
-            notchHeight: geometry.size.height,
-            showsSwitcher: preferences.orderedModules.count > 1
+        let frame = geometry.windowFrame(
+            height: Layout.sheetHeight(notchHeight: geometry.size.height)
         )
-        let frame = geometry.windowFrame(height: sheet)
 
         guard animated else { return panel.setFrame(frame, display: true) }
 

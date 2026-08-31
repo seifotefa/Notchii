@@ -29,11 +29,16 @@ enum DropSupport {
 }
 
 enum AirDrop {
-    static var isAvailable: Bool { NSSharingService(named: .sendViaAirDrop) != nil }
+    static var isAvailable: Bool { service != nil }
+
+    private static var service: NSSharingService? { NSSharingService(named: .sendViaAirDrop) }
+
+    /// The system's own AirDrop icon, so the pad looks like what it is.
+    static var icon: NSImage? { service?.image }
 
     /// Opens the system AirDrop picker for these files.
     static func send(_ urls: [URL]) {
-        guard !urls.isEmpty, let service = NSSharingService(named: .sendViaAirDrop) else { return }
+        guard !urls.isEmpty, let service else { return }
         NSApp.activate(ignoringOtherApps: true)
         service.perform(withItems: urls)
     }
