@@ -148,6 +148,10 @@ private struct FocusTimerColumn: View {
         .frame(maxWidth: .infinity)
         .onChange(of: isEditing) { editing in
             controller.isPinned = editing // do not close while typing a time
+            // Losing focus commits. Clicking play pulls focus out of the field
+            // before the button's action runs, so without this the typed time
+            // would be thrown away and the old one resumed.
+            if !editing { commitDraft() }
         }
     }
 
@@ -184,25 +188,26 @@ private struct FocusTimerColumn: View {
         isEditing = true
     }
 
-    /// Return: take what was typed and run it. Empty just starts the time set.
-    private func commit() {
+    /// Applies whatever was typed, without starting it. Safe to call twice:
+    /// the draft is consumed, so whichever of blur and submit lands first wins
+    /// and the other becomes a no-op.
+    private func commitDraft() {
         let text = draft.trimmingCharacters(in: .whitespaces)
-        isEditing = false
         draft = ""
-        if text.isEmpty {
-            timer.start()
-        } else {
-            timer.startTyped(text)
-        }
+        guard !text.isEmpty else { return }
+        timer.setTyped(text)
     }
 
-    /// Play takes whatever is in the field first, so typing then clicking play
-    /// runs the typed time rather than the old one.
+    /// Return: apply the typed time and start it.
+    private func commit() {
+        commitDraft()
+        isEditing = false
+        timer.start()
+    }
+
+    /// Play always runs the time that is set, which the blur above has already
+    /// updated from the field.
     private func play() {
-        if isEditing {
-            commit()
-        } else {
-            timer.toggle()
-        }
+        timer.toggle()
     }
 }
