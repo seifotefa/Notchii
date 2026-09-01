@@ -117,9 +117,12 @@ private struct FocusTimerColumn: View {
     @EnvironmentObject private var timer: FocusTimer
     @EnvironmentObject private var controller: NotchController
 
-    /// Only meaningful while `isEditing`; the clock is a plain label otherwise.
+    /// Whether the field is on screen. Plain state, because @FocusState cannot
+    /// turn on until the field it points at already exists.
+    @State private var isTyping = false
+    /// What has been typed. Only meaningful while `isTyping`.
     @State private var draft = ""
-    @FocusState private var isEditing: Bool
+    @FocusState private var focused: Bool
 
     var body: some View {
         VStack(spacing: 10) {
@@ -135,7 +138,7 @@ private struct FocusTimerColumn: View {
                 }
                 .buttonStyle(.plain)
 
-                Button(action: timer.reset) {
+                Button(action: { endTyping(); timer.reset() }) {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(Palette.mutedText)
@@ -146,20 +149,21 @@ private struct FocusTimerColumn: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .onChange(of: isEditing) { editing in
-            controller.isPinned = editing // do not close while typing a time
-            // Losing focus commits. Clicking play pulls focus out of the field
-            // before the button's action runs, so without this the typed time
-            // would be thrown away and the old one resumed.
-            if !editing { commitDraft() }
+        .onChange(of: focused) { isFocused in
+            Debug.log("focused -> \(isFocused) draft=\"\(draft)\"")
+            controller.isPinned = isFocused // do not close while typing a time
+            // Clicking play pulls focus out before the button acts, so commit
+            // here or the typed time would be lost.
+            if !isFocused {
+                commitDraft()
+                isTyping = false
+            }
         }
     }
 
-    /// Editing: a field holding exactly what you typed.
-    /// Otherwise: a label. There is no field to hold a stale value.
     @ViewBuilder
     private var clock: some View {
-        if isEditing {
+        if isTyping {
             TextField(
                 "",
                 text: $draft,
@@ -169,7 +173,9 @@ private struct FocusTimerColumn: View {
             .multilineTextAlignment(.center)
             .font(.system(size: 26, weight: .semibold).monospacedDigit())
             .foregroundColor(Palette.primaryText)
-            .focused($isEditing)
+            .focused($focused)
+            // The field has to exist before focus can move to it.
+            .onAppear { DispatchQueue.main.async { focused = true } }
             .onSubmit(commit)
             .help("Type minutes and seconds, then press Return")
         } else {
@@ -183,31 +189,42 @@ private struct FocusTimerColumn: View {
     }
 
     private func beginEditing() {
+        Debug.log("beginEditing (clock tapped)")
         timer.pause()
         draft = ""
-        isEditing = true
+        isTyping = true
     }
 
-    /// Applies whatever was typed, without starting it. Safe to call twice:
-    /// the draft is consumed, so whichever of blur and submit lands first wins
-    /// and the other becomes a no-op.
+    /// Applies what was typed without starting it. The draft is consumed, so
+    /// blur and Return are safe in either order.
     private func commitDraft() {
+        Debug.log("commitDraft draft=\"\(draft)\"")
         let text = draft.trimmingCharacters(in: .whitespaces)
         draft = ""
         guard !text.isEmpty else { return }
         timer.setTyped(text)
     }
 
-    /// Return: apply the typed time and start it.
     private func commit() {
-        commitDraft()
-        isEditing = false
+        Debug.log("commit (Return pressed)")
+        endTyping()
         timer.start()
     }
 
-    /// Play always runs the time that is set, which the blur above has already
-    /// updated from the field.
     private func play() {
+        Debug.log("play tapped: focused=\(focused) isTyping=\(isTyping) draft=\"\(draft)\"")
+        // Clicking a button in a non-activating panel does not resign the
+        // field's first responder, so blur cannot be relied on: commit here.
+        // commitDraft consumes the draft, so doing it twice is harmless.
+        endTyping()
         timer.toggle()
+    }
+
+    /// Leaves the text field, applying whatever was typed.
+    private func endTyping() {
+        guard isTyping else { return }
+        commitDraft()
+        focused = false
+        isTyping = false
     }
 }

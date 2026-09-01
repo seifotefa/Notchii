@@ -54,9 +54,13 @@ final class FocusTimer: ObservableObject {
     /// Applies a typed time without starting it. Ignored while running.
     @discardableResult
     func setTyped(_ text: String) -> Bool {
-        guard !isRunning, let seconds = Self.parse(text) else { return false }
+        guard !isRunning, let seconds = Self.parse(text) else {
+            Debug.log("setTyped(\"\(text)\") REJECTED running=\(isRunning) parsed=\(Self.parse(text).map(String.init(describing:)) ?? "nil")")
+            return false
+        }
         duration = seconds
         remaining = seconds
+        Debug.log("setTyped(\"\(text)\") -> duration=\(clock)")
         return true
     }
 
@@ -71,6 +75,7 @@ final class FocusTimer: ObservableObject {
     func toggle() { isRunning ? pause() : start() }
 
     func start() {
+        Debug.log("start() running=\(isRunning) remaining=\(clock) duration=\(Self.format(duration))")
         guard !isRunning else { return }
         if isFinished { remaining = duration }
         isRunning = true
@@ -81,6 +86,7 @@ final class FocusTimer: ObservableObject {
     }
 
     func pause() {
+        Debug.log("pause() at \(clock)")
         isRunning = false
         timer?.invalidate()
         timer = nil
@@ -88,6 +94,7 @@ final class FocusTimer: ObservableObject {
 
     /// Back to the time you last typed.
     func reset() {
+        Debug.log("reset() -> \(Self.format(duration))")
         pause()
         remaining = duration
     }
