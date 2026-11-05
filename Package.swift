@@ -7,7 +7,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Notchii",
-            path: "Sources/Notchii"
+            path: "Sources/Notchii",
+            linkerSettings: [.linkedLibrary("sqlite3")]
         )
     ]
 )

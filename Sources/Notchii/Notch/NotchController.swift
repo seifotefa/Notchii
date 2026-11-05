@@ -22,6 +22,7 @@ final class NotchController: ObservableObject {
     private let music: MusicController
     private let clipboard: ClipboardStore
     private let focusTimer: FocusTimer
+    private let aiSessions: AISessionStore
     private let preferences: Preferences
 
     private var geometry: NotchGeometry?
@@ -47,6 +48,7 @@ final class NotchController: ObservableObject {
         music: MusicController,
         clipboard: ClipboardStore,
         focusTimer: FocusTimer,
+        aiSessions: AISessionStore,
         preferences: Preferences
     ) {
         self.store = store
@@ -54,6 +56,7 @@ final class NotchController: ObservableObject {
         self.music = music
         self.clipboard = clipboard
         self.focusTimer = focusTimer
+        self.aiSessions = aiSessions
         self.preferences = preferences
         self.module = preferences.lastModule
     }
@@ -80,6 +83,7 @@ final class NotchController: ObservableObject {
             .environmentObject(music)
             .environmentObject(clipboard)
             .environmentObject(focusTimer)
+            .environmentObject(aiSessions)
             .environmentObject(preferences)
             .environmentObject(self)
         panel.contentView = NSHostingView(rootView: root)

@@ -20,8 +20,12 @@ struct SettingsModuleView: View {
 
     private var modeList: some View {
         VStack(spacing: 0) {
-            ForEach(NotchModule.configurable) { module in
-                ModeRow(module: module) { focused = module }
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    ForEach(NotchModule.configurable) { module in
+                        ModeRow(module: module) { focused = module }
+                    }
+                }
             }
         }
     }
@@ -58,7 +62,7 @@ private struct ModeRow: View {
 
             Spacer(minLength: 8)
 
-            if module.components.count > 1 {
+            if module.components.count > 1 || module == .ai {
                 Button(action: openDetail) {
                     HStack(spacing: 4) {
                         Image(systemName: "gearshape")
@@ -75,7 +79,7 @@ private struct ModeRow: View {
             }
         }
         .padding(.horizontal, 8)
-        .frame(height: Layout.contentHeight / CGFloat(NotchModule.configurable.count))
+        .frame(height: 27)
         .background(
             RoundedRectangle(cornerRadius: 6)
                 .fill(Palette.primaryText.opacity(isHovering ? 0.05 : 0))
@@ -91,6 +95,7 @@ private struct ModuleDetail: View {
     let back: () -> Void
 
     @EnvironmentObject private var preferences: Preferences
+    @EnvironmentObject private var aiSessions: AISessionStore
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -110,8 +115,28 @@ private struct ModuleDetail: View {
             .buttonStyle(.plain)
             .frame(height: 24)
 
-            ForEach(module.components) { component in
-                componentRow(component)
+            if module == .ai {
+                ForEach([AISession.Provider.codex, .claude, .grok], id: \.rawValue) { provider in
+                    Button {
+                        aiSessions.setEnabled(provider, !aiSessions.isEnabled(provider))
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: aiSessions.isEnabled(provider) ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(aiSessions.isEnabled(provider) ? Palette.accent : Palette.mutedText)
+                            Text(provider.rawValue.capitalized)
+                                .foregroundColor(aiSessions.isEnabled(provider) ? Palette.primaryText : Palette.mutedText)
+                            Spacer()
+                        }
+                        .font(.system(size: 12))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .frame(height: 27)
+                }
+            } else {
+                ForEach(module.components) { component in
+                    componentRow(component)
+                }
             }
 
             Spacer(minLength: 0)

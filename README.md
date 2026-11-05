@@ -37,9 +37,57 @@ cd Notchii && make install
 | **Tray** | Drag files onto the notch to park them; drag them out anywhere, or drop them on AirDrop. |
 | **Music** | Artwork, playhead and transport for Spotify and Apple Music. |
 | **Clipboard** | The last 20 things you copied. Click one to put it back. |
+| **AI** | Up to five Claude, Codex, or Grok chats with running, blocked, and ready indicators. |
 
 Every mode, and every piece inside a mode, switches off from the gear beside the
 notch.
+
+### AI status feed
+
+The AI mode follows local Codex chats and Grok Bot conversations after you send
+a message. It also reads `~/Library/Application Support/Notchii/ai-sessions.json`
+every five seconds for other providers. A local integration can update this file
+atomically with recent sessions. The feed does not contain credentials or chat messages:
+
+```json
+{
+  "sessions": [
+    {
+      "id": "example-task-id",
+      "provider": "codex",
+      "title": "Fix search",
+      "status": "running",
+      "url": "codex://threads/example-task-id",
+      "contextUsed": 12000,
+      "contextLimit": 32000,
+      "usage": "2h 15m remaining",
+      "updatedAt": "2026-11-05T18:30:00Z",
+      "lastSentAt": "2026-11-05T18:29:45Z"
+    }
+  ]
+}
+```
+
+Providers are `claude`, `codex`, or `grok`; statuses are `running`, `blocked`,
+`ready`, or `idle`. `url`, `contextUsed`, `contextLimit`, and `usage` are optional.
+For feed integrations, set `lastSentAt` to the latest user message time. Refresh
+`updatedAt` for status changes without changing `lastSentAt`.
+For Grok Bot, set `title` to the bot's name.
+Use an actual chat URL for one-click opening. Sessions older than two minutes
+disappear, so the writer should refresh `updatedAt` while its source is active.
+The small app bubble spins while running and shows the chat name, shows a warning
+when blocked, and briefly becomes a green checkmark when ready. It then returns
+to its app icon. Hovering reveals its name, plus context and usage when supplied.
+Clicking opens the source chat. The five chat slots are saved across launches:
+drag a bubble onto trash to remove it, leaving the slot empty until a new message
+is sent in a chat outside the tray. Drag onto the pin to protect a chat from being
+replaced when all five slots are full; drag it there again or right-click to unpin.
+The AI gear in notch settings controls which providers appear.
+Codex discovery is read-only and uses Codex's local thread database. Grok Bot
+discovery reads its local roster and transcript snapshots, including each bot's
+avatar shape and color; clicking its bubble activates Grok Bot. Claude still needs
+a local feed writer. Context and account
+usage are only shown when a provider supplies them.
 
 ## Requirements
 

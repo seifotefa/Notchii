@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let music = MusicController()
     private let clipboard = ClipboardStore()
     private let focusTimer = FocusTimer()
+    private let aiSessions = AISessionStore()
     private let settingsWindow = SettingsWindow()
 
     private var notch: NotchController?
@@ -21,6 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             music: music,
             clipboard: clipboard,
             focusTimer: focusTimer,
+            aiSessions: aiSessions,
             preferences: preferences
         )
         notch.start()

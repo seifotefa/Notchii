@@ -96,6 +96,7 @@ struct NotchRootView: View {
         case .files: FileShelfView()
         case .music: MusicView()
         case .clipboard: ClipboardView()
+        case .ai: AIView()
         }
     }
 }

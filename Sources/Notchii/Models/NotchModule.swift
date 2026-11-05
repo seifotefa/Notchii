@@ -6,6 +6,7 @@ enum NotchModule: String, CaseIterable, Codable, Identifiable {
     case files
     case music
     case clipboard
+    case ai
 
     var id: String { rawValue }
 
@@ -19,6 +20,7 @@ enum NotchModule: String, CaseIterable, Codable, Identifiable {
         case .files: return "Tray"
         case .music: return "Music"
         case .clipboard: return "Clipboard"
+        case .ai: return "AI"
         }
     }
 
@@ -28,6 +30,7 @@ enum NotchModule: String, CaseIterable, Codable, Identifiable {
         case .files: return "tray.full"
         case .music: return "music.note"
         case .clipboard: return "doc.on.clipboard"
+        case .ai: return "sparkles"
         }
     }
 
@@ -49,6 +52,7 @@ enum NotchComponent: String, CaseIterable, Codable, Identifiable {
     case transport
 
     case clipboardHistory
+    case aiSessions
 
     var id: String { rawValue }
 
@@ -58,6 +62,7 @@ enum NotchComponent: String, CaseIterable, Codable, Identifiable {
         case .airdrop, .shelf: return .files
         case .nowPlaying, .transport: return .music
         case .clipboardHistory: return .clipboard
+        case .aiSessions: return .ai
         }
     }
 
@@ -70,6 +75,7 @@ enum NotchComponent: String, CaseIterable, Codable, Identifiable {
         case .nowPlaying: return "Now playing"
         case .transport: return "Playback controls"
         case .clipboardHistory: return "History"
+        case .aiSessions: return "Chats and tasks"
         }
     }
 }
